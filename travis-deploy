@@ -1,0 +1,107 @@
+#!/bin/bash
+echo "Creating deploy.sh..."
+
+environment=$1
+red=green=`tput setaf 1`
+green=`tput setaf 2`
+reset=`tput sgr0`
+
+# Define Language
+
+case "$1" in
+  jekyll)
+    language="ruby"
+    ;;
+  gatsby)
+    language="node-js"
+    ;;
+  *)
+    echo 'WTF bro?!' >&2
+    exit 1
+    ;;
+esac
+
+# Define Script
+
+case "$1" in 
+    jekyll)
+    script="bundle exec jekyll build"
+    ;;
+    gatsby)
+    script="yarn build"
+    ;;
+    *)
+    echo 'WTF bro?!' >&2
+    exit 1
+    ;;
+esac
+
+# Define Directory
+case "$1" in
+    jekyll)
+    dir="_site"
+    ;;
+    gatsby)
+    dir="public"
+    ;;
+    *)
+    echo 'WTF bro?!' >&2
+    exit 1
+    ;;
+esac
+
+cat << EOF > deploy.sh
+#!/bin/bash
+set -e
+
+if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+    echo "NETLIFY_AUTH_TOKEN not setted"
+    exit 1
+fi
+
+if [ -z "$NETLIFY_SITE_ID" ]; then
+    echo "NETLIFY_SITE_ID not setted"
+    exit 1
+fi
+
+if [ "$TRAVIS_BRANCH" = "master" ]; then
+    npx netlify deploy \
+        --message="$TRAVIS_BRANCH@\$(git rev-parse --short HEAD)" \
+        --auth="$NETLIFY_AUTH_TOKEN" \
+        --site="$NETLIFY_SITE_ID" \
+        --dir=$dir \
+        --prod
+fi
+EOF
+echo "${green}Done!${reset}"
+
+echo "Creating .travis.yml"
+
+cat << EOF > .travis.yml
+
+sudo: false
+
+language=$language
+node_js:
+    - "10"
+
+cache:
+  directories:
+    - node_modules
+
+script:
+  - $script
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: bash deploy.sh
+  on:
+    branch: master
+
+addons:
+  apt:
+    update: true
+EOF
+
+echo "${green}Done!${reset}"
