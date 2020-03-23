@@ -1,4 +1,4 @@
-#Travis Deploy
+# Travis Deploy
 
 A simple shell script to configure a deploy of either a **Jekyll** or a **Gatsby** 
 
