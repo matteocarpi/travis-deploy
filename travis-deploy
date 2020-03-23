@@ -81,7 +81,7 @@ cat << EOF > .travis.yml
 
 sudo: false
 
-language=$language
+language:$language
 node_js:
     - "10"
 
