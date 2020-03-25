@@ -6,45 +6,20 @@ red=green=`tput setaf 1`
 green=`tput setaf 2`
 reset=`tput sgr0`
 
-# Define Language
+# Define Vars
 
 case "$1" in
   jekyll)
     language="ruby"
+    script="bundle exec jekyll build"
+    dir="_site"
     ;;
   gatsby)
     language="node-js"
-    ;;
-  *)
-    echo 'WTF bro?!' >&2
-    exit 1
-    ;;
-esac
-
-# Define Script
-
-case "$1" in 
-    jekyll)
-    script="bundle exec jekyll build"
-    ;;
-    gatsby)
     script="yarn build"
-    ;;
-    *)
-    echo 'WTF bro?!' >&2
-    exit 1
-    ;;
-esac
-
-# Define Directory
-case "$1" in
-    jekyll)
-    dir="_site"
-    ;;
-    gatsby)
     dir="public"
     ;;
-    *)
+  *)
     echo 'WTF bro?!' >&2
     exit 1
     ;;
@@ -54,17 +29,17 @@ cat << EOF > deploy.sh
 #!/bin/bash
 set -e
 
-if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+if [ -z "\$NETLIFY_AUTH_TOKEN" ]; then
     echo "NETLIFY_AUTH_TOKEN not setted"
     exit 1
 fi
 
-if [ -z "$NETLIFY_SITE_ID" ]; then
+if [ -z "\$NETLIFY_SITE_ID" ]; then
     echo "NETLIFY_SITE_ID not setted"
     exit 1
 fi
 
-if [ "$TRAVIS_BRANCH" = "master" ]; then
+if [ "\$TRAVIS_BRANCH" = "master" ]; then
     npx netlify deploy \
         --message="$TRAVIS_BRANCH@\$(git rev-parse --short HEAD)" \
         --auth="$NETLIFY_AUTH_TOKEN" \
